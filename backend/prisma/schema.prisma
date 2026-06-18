@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  ISSUER
+  STUDENT
+}
+
+enum CertificateStatus {
+  ISSUED
+  REVOKED
+}
+
+enum VerificationResult {
+  VALID
+  INVALID
+  REVOKED
+  NOT_FOUND
+}
+
+model User {
+  id                 Int           @id @default(autoincrement())
+  name               String
+  email              String        @unique
+  passwordHash       String
+  role               UserRole      @default(ISSUER)
+  walletAddress      String?       @unique
+  university         University?
+  issuedCertificates Certificate[] @relation("IssuerCertificates")
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+}
+
+model University {
+  id            Int           @id @default(autoincrement())
+  name          String
+  email         String        @unique
+  walletAddress String        @unique
+  isApproved    Boolean       @default(false)
+  userId        Int?          @unique
+  user          User?         @relation(fields: [userId], references: [id])
+  certificates  Certificate[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Certificate {
+  id               Int               @id @default(autoincrement())
+  certificateId    String            @unique
+  studentName      String
+  studentEmail     String
+  studentId        String
+  programName      String
+  degreeName       String
+  graduationDate   DateTime
+  issuerId         Int
+  issuer           User              @relation("IssuerCertificates", fields: [issuerId], references: [id])
+  universityId     Int?
+  university       University?       @relation(fields: [universityId], references: [id])
+  certificateHash  String
+  blockchainTxHash String?
+  status           CertificateStatus @default(ISSUED)
+  pdfUrl           String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  revokedAt        DateTime?
+
+  @@index([issuerId])
+  @@index([universityId])
+  @@index([studentEmail])
+  @@index([status])
+}
+
+model VerificationLog {
+  id            Int                @id @default(autoincrement())
+  certificateId String
+  verifierIp    String?
+  result        VerificationResult
+  verifiedAt    DateTime           @default(now())
+
+  @@index([certificateId])
+  @@index([result])
+  @@index([verifiedAt])
+}
