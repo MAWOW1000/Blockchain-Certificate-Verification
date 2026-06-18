@@ -1,75 +1,67 @@
-# Sample Hardhat 3 Project (`mocha` and `ethers`)
+# CertChain — Blockchain Certificate Verification
 
-This project showcases a Hardhat 3 project using `mocha` for tests and the `ethers` library for Ethereum interactions.
+A full-stack system for issuing and verifying academic certificates, with certificate
+hashes anchored on the Ethereum (Sepolia) blockchain. Universities issue tamper-proof
+certificates; anyone can verify authenticity by certificate ID.
 
-To learn more about Hardhat 3, please visit the [Getting Started guide](https://hardhat.org/docs/getting-started#getting-started-with-hardhat-3). To share your feedback, join our [Hardhat 3](https://hardhat.org/hardhat3-telegram-group) Telegram group or [open an issue](https://github.com/NomicFoundation/hardhat/issues/new) in our GitHub issue tracker.
+## 🔗 Live Demo
 
-## Project Overview
+> _Deployment in progress — link will be added here once live._
 
-This example project includes:
+**Demo admin login:**
 
-- A simple Hardhat configuration file.
-- Foundry-compatible Solidity unit tests.
-- TypeScript integration tests using `mocha` and ethers.js
-- Examples demonstrating how to connect to different types of networks, including locally simulating OP mainnet.
+| Field    | Value            |
+| -------- | ---------------- |
+| Email    | `admin@test.com` |
+| Password | `admin123`       |
 
-## Usage
+> ⚠️ This is a public demo account. The password can be changed from the admin panel.
 
-### Running Tests
+## Architecture
 
-To run all the tests in the project, execute the following command:
+| Layer        | Tech                                          |
+| ------------ | --------------------------------------------- |
+| Smart contract | Solidity (`CertificateRegistry.sol`), Hardhat 3 |
+| Blockchain   | Ethereum Sepolia testnet                      |
+| Backend      | Node.js, Express, Prisma ORM                  |
+| Database     | PostgreSQL (Neon)                             |
+| Frontend     | React + Vite                                  |
+| Hosting      | Backend → Render · Frontend → Vercel          |
 
-```shell
-npx hardhat test
+The blockchain stores only the certificate **hash** and minimal metadata — no personal
+student data is written on-chain. Full metadata lives in PostgreSQL.
+
+## Local Development
+
+```bash
+# 1. Local blockchain
+npx hardhat node
+
+# 2. Deploy contract (new terminal)
+npx hardhat run scripts/deploy.ts --network localhost
+
+# 3. Backend (new terminal)
+cd backend
+npm install
+npm run prisma:generate
+npm run dev
+
+# 4. Frontend (new terminal)
+cd frontend
+npm install
+npm run dev
 ```
 
-You can also selectively run the Solidity or `mocha` tests:
+Then open http://localhost:5173.
 
-```shell
-npx hardhat test solidity
-npx hardhat test mocha
-```
+## Core Flow
 
-### Make a deployment to Sepolia
+1. Register (first user becomes admin) → admin approves issuers
+2. Approved issuer issues a certificate → hash recorded on-chain, metadata in DB, PDF + QR generated
+3. Anyone verifies by certificate ID → status cross-checked against the blockchain
+4. Issuer/admin can revoke → verification then shows `REVOKED`
 
-This project includes an example Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.
+## Deployment
 
-To run the deployment to a local chain:
-
-```shell
-npx hardhat ignition deploy ignition/modules/Counter.ts
-```
-
-To run the deployment to Sepolia, you need an account with funds to send the transaction. The provided Hardhat configuration includes a Configuration Variable called `SEPOLIA_PRIVATE_KEY`, which you can use to set the private key of the account you want to use.
-
-You can set the `SEPOLIA_PRIVATE_KEY` variable using the `hardhat-keystore` plugin or by setting it as an environment variable.
-
-To set the `SEPOLIA_PRIVATE_KEY` config variable using `hardhat-keystore`:
-
-```shell
-npx hardhat keystore set SEPOLIA_PRIVATE_KEY
-```
-
-After setting the variable, you can run the deployment with the Sepolia network:
-
-```shell
-npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
-```
-
-devpham@devpham-GF63-Thin-11SC:~/personal/Master-2026/blockchain/Blockchain-Certificate-Verification$ npx hardhat ignition deploy ignition/modules/CertificateRegistry.ts --network localhost
-
-
-
-Hardhat Ignition 🚀
-
-Deploying [ CertificateRegistryModule ]
-
-Batch #1
-  Executed CertificateRegistryModule#CertificateRegistry
-
-[ CertificateRegistryModule ] successfully deployed 🚀
-
-Deployed Addresses
-
-CertificateRegistryModule#CertificateRegistry - 0x5FbDB2315678afecb367f032d93F642f64180aa3
-devpham@devpham-GF63-Thin-11SC:~/personal/Master-2026/blockchain/Blockchain-Certificate-Verification$ 
+Deployment is automated via `render.yaml` (backend) and `frontend/vercel.json` (frontend).
+See [Implementation-Steps.md](Implementation-Steps.md) phases 18–22 for the full guide.

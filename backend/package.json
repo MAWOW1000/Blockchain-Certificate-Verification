@@ -6,7 +6,9 @@
     "dev": "nodemon --exec tsx src/server.js",
     "start": "tsx src/server.js",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev",
+    "seed": "tsx prisma/seed.js",
+    "render-build": "npm install && npx prisma generate && npx prisma migrate deploy && npm run seed"
   },
   "type": "module",
   "author": "",

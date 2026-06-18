@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../services/api";
+import { ShieldCheck, Search, Check, X, AlertTriangle } from "../components/Icons";
 
-const STATUS_STYLE = {
-  VALID: { color: "green", label: "VALID" },
-  INVALID: { color: "red", label: "INVALID" },
-  REVOKED: { color: "orange", label: "REVOKED" },
-  NOT_FOUND: { color: "gray", label: "NOT FOUND" },
+const STATUS = {
+  VALID:     { cls: "valid",    label: "Certificate Valid",      icon: Check },
+  INVALID:   { cls: "invalid",  label: "Certificate Invalid",    icon: X },
+  REVOKED:   { cls: "revoked",  label: "Certificate Revoked",    icon: AlertTriangle },
+  NOT_FOUND: { cls: "notfound", label: "Certificate Not Found",  icon: Search },
 };
 
 export default function Verify() {
@@ -26,47 +27,65 @@ export default function Verify() {
       const { data } = await api.get(`/verify/${certId.trim()}`);
       setResult(data);
     } catch {
-      setError("Verification failed");
+      setError("Verification failed. Please try again.");
     } finally {
       setLoading(false);
     }
   }
 
-  const statusInfo = result ? STATUS_STYLE[result.result] || { color: "gray", label: result.result } : null;
+  const info = result ? STATUS[result.result] || STATUS.INVALID : null;
+  const Icon = info?.icon;
+  const cert = result?.certificate;
 
   return (
-    <div className="auth-container">
-      <h2>Verify Certificate</h2>
-      <form onSubmit={handleVerify}>
-        <label>Certificate ID</label>
-        <input
-          value={certId}
-          onChange={(e) => setCertId(e.target.value)}
-          placeholder="Enter certificate ID"
-          required
-        />
-        <button type="submit" disabled={loading}>{loading ? "Verifying…" : "Verify"}</button>
-      </form>
-      {error && <p className="error">{error}</p>}
-      {result && (
-        <div className="verify-result">
-          <h3 style={{ color: statusInfo.color }}>Result: {statusInfo.label}</h3>
-          {result.certificate && (
-            <div>
-              <p><strong>Student:</strong> {result.certificate.studentName}</p>
-              <p><strong>Program:</strong> {result.certificate.programName}</p>
-              <p><strong>Degree:</strong> {result.certificate.degreeName}</p>
-              <p><strong>Graduation Date:</strong> {new Date(result.certificate.graduationDate).toLocaleDateString()}</p>
-              <p><strong>Issued By:</strong> {result.certificate.issuerName}</p>
-              <p><strong>University:</strong> {result.certificate.universityName || "—"}</p>
-              {result.certificate.revokedAt && (
-                <p><strong>Revoked:</strong> {new Date(result.certificate.revokedAt).toLocaleDateString()}</p>
-              )}
+    <div className="page">
+      <div className="verify-hero">
+        <span className="eyebrow"><ShieldCheck size={14} /> Blockchain Verified</span>
+        <h1>Verify Academic Certificate</h1>
+        <p>Enter a certificate ID to instantly confirm its authenticity against the blockchain.</p>
+
+        <form className="verify-form" onSubmit={handleVerify}>
+          <input className="input" value={certId} onChange={(e) => setCertId(e.target.value)}
+            placeholder="Enter certificate ID (e.g. 3e5b9b94-...)" required />
+          <button className="btn btn-primary" type="submit" disabled={loading}>
+            <Search size={18} /> {loading ? "Verifying…" : "Verify"}
+          </button>
+        </form>
+      </div>
+
+      {error && <div className="alert alert-error" style={{ maxWidth: 560, margin: "0 auto" }}>{error}</div>}
+
+      {result && info && (
+        <div className="result-card">
+          <div className={`result-banner ${info.cls}`}>
+            <span className="result-icon"><Icon size={20} /></span>
+            {info.label}
+          </div>
+          {cert && (
+            <div className="result-body">
+              <div className="detail-grid">
+                <Row label="Student" value={cert.studentName} />
+                <Row label="Program" value={cert.programName} />
+                <Row label="Degree" value={cert.degreeName} />
+                <Row label="Graduation" value={new Date(cert.graduationDate).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })} />
+                <Row label="Issued by" value={cert.issuerName} />
+                {cert.universityName && <Row label="University" value={cert.universityName} />}
+                {cert.revokedAt && <Row label="Revoked on" value={new Date(cert.revokedAt).toLocaleDateString()} />}
+                {cert.blockchainTxHash && <Row label="Blockchain TX" value={cert.blockchainTxHash} mono />}
+              </div>
             </div>
           )}
         </div>
       )}
-      <p style={{ marginTop: "1rem" }}><a href="/login">Login</a></p>
+    </div>
+  );
+}
+
+function Row({ label, value, mono }) {
+  return (
+    <div className="detail-row">
+      <span className="detail-label">{label}</span>
+      <span className={`detail-value${mono ? " mono" : ""}`}>{value}</span>
     </div>
   );
 }
