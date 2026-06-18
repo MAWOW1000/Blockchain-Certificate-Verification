@@ -174,6 +174,12 @@ This address will be used by the backend.
 
 ## Phase 6: Create Local PostgreSQL Database
 
+Detailed manual:
+
+```text
+docs/manual-phase-6-local-postgresql-database.md
+```
+
 Create local database:
 
 ```bash
@@ -192,6 +198,18 @@ Local database URL example:
 
 ```env
 DATABASE_URL=postgresql://postgres:your_password@localhost:5432/certificate_db
+```
+
+Recommended local development URL:
+
+```env
+DATABASE_URL=postgresql://certificate_user:certificate_password@localhost:5432/certificate_db
+```
+
+Test the connection:
+
+```bash
+psql "postgresql://certificate_user:certificate_password@localhost:5432/certificate_db"
 ```
 
 ## Phase 7: Create Backend
@@ -242,6 +260,12 @@ backend/
 
 ## Phase 8: Add Backend Environment Variables
 
+Detailed manual:
+
+```text
+docs/manual-phase-8-backend-environment-variables.md
+```
+
 Create:
 
 ```text
@@ -251,11 +275,16 @@ backend/.env
 Local development example:
 
 ```env
+NODE_ENV=development
 PORT=5000
-DATABASE_URL=postgresql://postgres:your_password@localhost:5432/certificate_db
-JWT_SECRET=change_this_secret
+FRONTEND_URL=http://localhost:5173
+DATABASE_URL=postgresql://certificate_user:certificate_password@localhost:5432/certificate_db
+JWT_SECRET=change_this_secret_to_a_long_random_value
+JWT_EXPIRES_IN=7d
 BLOCKCHAIN_NETWORK=localhost
 LOCAL_RPC_URL=http://127.0.0.1:8545
+SEPOLIA_RPC_URL=
+PRIVATE_KEY=
 CONTRACT_ADDRESS=your_local_contract_address
 ```
 
@@ -268,11 +297,14 @@ backend/.env.example
 Example:
 
 ```env
+NODE_ENV=development
 PORT=5000
+FRONTEND_URL=http://localhost:5173
 DATABASE_URL=
 JWT_SECRET=
-BLOCKCHAIN_NETWORK=
-LOCAL_RPC_URL=
+JWT_EXPIRES_IN=7d
+BLOCKCHAIN_NETWORK=localhost
+LOCAL_RPC_URL=http://127.0.0.1:8545
 SEPOLIA_RPC_URL=
 PRIVATE_KEY=
 CONTRACT_ADDRESS=
@@ -281,6 +313,12 @@ CONTRACT_ADDRESS=
 Do not commit real `.env` values.
 
 ## Phase 9: Create Prisma Database Schema
+
+Detailed manual:
+
+```text
+docs/manual-phase-9-prisma-database-schema.md
+```
 
 Edit:
 
@@ -355,7 +393,10 @@ verifiedAt
 Run migration:
 
 ```bash
+npx prisma format
+npx prisma validate
 npx prisma migrate dev --name init
+npx prisma generate
 ```
 
 Open Prisma Studio to check database:
