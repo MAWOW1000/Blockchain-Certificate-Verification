@@ -1,0 +1,49 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-c7b1e702a054e570bd237b31e7b64d433eb6d546",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "compilerType": "solc",
+  "toolVersions": {
+    "hardhat": "3.9.0"
+  },
+  "userSourceNameMap": {
+    "contracts/CertificateRegistry.sol": "project/contracts/CertificateRegistry.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode.linkReferences",
+            "evm.bytecode.object",
+            "evm.bytecode.opcodes",
+            "evm.bytecode.sourceMap",
+            "evm.deployedBytecode.immutableReferences",
+            "evm.deployedBytecode.linkReferences",
+            "evm.deployedBytecode.object",
+            "evm.deployedBytecode.opcodes",
+            "evm.deployedBytecode.sourceMap",
+            "evm.methodIdentifiers"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/CertificateRegistry.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity ^0.8.28;\n\n\ncontract CertificateRegistry {\n  \n  struct Certificate {\n    bytes32 certificateHash;\n    address issuer;\n    uint256 issuedAt;\n    bool isRevoked;\n    bool exists;\n  }\n  \n  address public admin;\n  \n  mapping(address => bool) public authorizedIssuers;\n  mapping(bytes32 => Certificate) private certificates;\n  \n  event IssuerAuthorized(address indexed issuer);\n  event IssuerRemoved(address indexed issuer);\n  event CertificateIssued(bytes32 indexed certificateId, bytes32 certificateHash, address indexed issuer);\n  event CertificateRevoked(bytes32 indexed certificateId, address indexed revokedBy);\n\t\n  modifier onlyAdmin() {\n    require(msg.sender == admin, \"Only admin can do this\");\n    _;\n  }\n\n  modifier onlyAuthorizedIssuer() {\n    require(authorizedIssuers[msg.sender], \"Only authorized issuers can do this\");\n    _;\n  }\n\n  constructor() {\n    admin = msg.sender;\n    authorizedIssuers[msg.sender] = true;\n    emit IssuerAuthorized(msg.sender);\n  }\n\n  function authorizeIssuer(address issuer) public onlyAdmin {\n    require(issuer != address(0), \"Invalid issuer address\");\n    authorizedIssuers[issuer] = true;\n    emit IssuerAuthorized(issuer);\n  }\n\n  function removeIssuer(address issuer) public onlyAdmin {\n    require(issuer != address(0), \"Invalid issuer address\");\n    authorizedIssuers[issuer] = false;\n    emit IssuerRemoved(issuer);\n  }\n\n  function issueCertificate(bytes32 certificateId, bytes32 certificateHash) public onlyAuthorizedIssuer {\n    require(certificateId != bytes32(0), \"Invalid certificate ID\");\n    require(certificateHash != bytes32(0), \"Invalid certificate hash\");\n    require(!certificates[certificateId].exists, \"Certificate already exists\");\n\n    certificates[certificateId] = Certificate({\n      certificateHash: certificateHash,\n      issuer: msg.sender,\n      issuedAt: block.timestamp,\n      isRevoked: false,\n      exists: true\n    });\n\n    emit CertificateIssued(certificateId, certificateHash, msg.sender);\n  }\n  \n  function revokeCertificate(bytes32 certificateId) public {\n    Certificate storage certificate = certificates[certificateId];\n\n    require(certificate.exists, \"Certificate does not exist\");\n    require(msg.sender == admin || msg.sender == certificate.issuer, \"Only admin or issuer can revoke\");\n    require(!certificate.isRevoked, \"Certificate is already revoked\");\n\n    certificate.isRevoked = true;\n\n    emit CertificateRevoked(certificateId, msg.sender);\n  }  \n  \n  function verifyCertificate(bytes32 certificateId, bytes32 certificateHash) public view returns (bool) {\n    Certificate storage certificate = certificates[certificateId];\n\n    return certificate.exists && !certificate.isRevoked && certificate.certificateHash == certificateHash;\n  }\n\n   function getCertificate(\n    bytes32 certificateId\n  ) public view returns (bytes32 certificateHash, address issuer, uint256 issuedAt, bool isRevoked) {\n    Certificate storage certificate = certificates[certificateId];\n\n    require(certificate.exists, \"Certificate does not exist\");\n\n    return (certificate.certificateHash, certificate.issuer, certificate.issuedAt, certificate.isRevoked);\n  }\n\n}\n"
+      }
+    }
+  }
+}
