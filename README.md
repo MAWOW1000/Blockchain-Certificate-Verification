@@ -6,7 +6,7 @@ certificates; anyone can verify authenticity by certificate ID.
 
 ## 🔗 Live Demo
 
-> _Deployment in progress — link will be added here once live._
+**App:** https://frontend-alpha-azure-48.vercel.app
 
 **Demo admin login:**
 
@@ -16,6 +16,17 @@ certificates; anyone can verify authenticity by certificate ID.
 | Password | `admin123`       |
 
 > ⚠️ This is a public demo account. The password can be changed from the admin panel.
+
+**Deployed infrastructure:**
+
+| Component        | URL / Address                                                  |
+| ---------------- | -------------------------------------------------------------- |
+| Frontend (Vercel) | https://frontend-alpha-azure-48.vercel.app                    |
+| Backend API (Render) | https://cert-verify-backend-7lrl.onrender.com/api          |
+| Smart contract (Sepolia) | [`0xe35200223279eaBe82eDC854d587738b69bBb85b`](https://sepolia.etherscan.io/address/0xe35200223279eaBe82eDC854d587738b69bBb85b) |
+| Database         | Neon PostgreSQL                                                |
+
+> ℹ️ The backend runs on Render's free tier and may take ~30–50s to wake up on the first request after idling.
 
 ## Architecture
 
