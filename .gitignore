@@ -40,5 +40,16 @@ backend/src/generated/
 frontend/dist/
 
 # Misc
+.claude
 .claude/
+.agents
 .agents/
+
+# Secrets / private key dumps (never commit)
+docs/Address:*
+*private*key*
+
+# Local-only submission/coursework materials
+docs/ai-agent/
+docs/submission/
+scripts/generate_submission_report.py

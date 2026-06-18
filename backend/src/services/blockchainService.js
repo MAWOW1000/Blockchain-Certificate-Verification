@@ -1,16 +1,6 @@
 import { ethers } from "ethers";
-import { readFileSync } from "fs";
-import { resolve, dirname } from "path";
-import { fileURLToPath } from "url";
 import { env } from "../config/env.js";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-// ABI lives in the root project artifacts folder
-const ABI_PATH = resolve(
-  __dirname,
-  "../../../artifacts/contracts/CertificateRegistry.sol/CertificateRegistry.json"
-);
+import { CertificateRegistryABI as abi } from "./certificateRegistryAbi.js";
 
 let _service = null;
 
@@ -19,8 +9,6 @@ export async function getBlockchainService() {
 
   const rpcUrl = env.blockchainNetwork === "sepolia" ? env.sepoliaRpcUrl : env.localRpcUrl;
   const provider = new ethers.JsonRpcProvider(rpcUrl);
-
-  const { abi } = JSON.parse(readFileSync(ABI_PATH, "utf8"));
 
   let contract;
   if (env.privateKey) {

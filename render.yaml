@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: cert-verify-backend
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm run render-build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: BLOCKCHAIN_NETWORK
+        value: sepolia
+      - key: LOCAL_RPC_URL
+        value: http://127.0.0.1:8545
+      # The following must be set in the Render dashboard (secrets):
+      #   DATABASE_URL          - Neon connection string
+      #   JWT_SECRET            - long random string
+      #   SEPOLIA_RPC_URL       - Alchemy Sepolia URL
+      #   PRIVATE_KEY           - Sepolia test wallet private key
+      #   CONTRACT_ADDRESS      - deployed contract address
+      #   FRONTEND_URL          - Vercel deployment URL
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: SEPOLIA_RPC_URL
+        sync: false
+      - key: PRIVATE_KEY
+        sync: false
+      - key: CONTRACT_ADDRESS
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
